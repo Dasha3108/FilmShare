@@ -1,0 +1,51 @@
+﻿@{
+    ViewData["Title"] = "Log In";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model FilmShare.ViewModels.Account.LogInModel
+
+<section class="wrapper">
+    <div class="row" id="login-page">
+        <div class="container">
+            
+            <div class="login-wrap">
+                    
+                <form class="form-login" asp-action="Login" asp-controller="Account">
+
+                    <h2 class="form-login-heading">Log in now</h2>
+
+                    <div class="login-wrap">
+                        <div style="color:darkred" asp-validation-summary="ModelOnly"></div>
+                        <div class="form-group">
+                            <label asp-for="Login">Email: </label>
+                            <input class="availableSpaceInput" type="text" asp-for="Login" />
+                            <span asp-validation-for="Login" class="text-danger" />
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Password">Password: </label>
+                            <input class="availableSpaceInput" asp-for="Password" />
+                            <span asp-validation-for="Password" class="text-danger" />
+                        </div>
+                        <div class="form-group centerButtonContainer">
+                            <input type="submit" value="Log In" class="btn" />
+                        </div>
+                    </div>
+                </form>
+                <div class="registration">
+                    Don't have an account yet?<br />
+                    <a asp-action="Register" asp-controller="Account">Sign up now</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<script>
+    let logoutButton = document.getElementById("logoutButton");
+    logoutButton.innerHTML = "Sigh Up";
+    logoutButton.setAttribute("href", "/Account/Register");
+    document.body.style.backgroundColor = "#16212c";
+   // $.backstretch("{% static "img/background.jpg" %}", {speed: 500});
+</script>

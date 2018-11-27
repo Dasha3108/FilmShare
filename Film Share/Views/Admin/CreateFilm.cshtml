@@ -1,0 +1,135 @@
+﻿@model FilmShare.ViewModels.FilmModel
+
+@{
+    ViewData["Title"] = "Create Film";
+    Layout = "~/Views/Shared/_LayoutMenu.cshtml";
+}
+
+<div class="col-md-6 col-md-offset-3 profileWrap">
+    <div class="text-center">
+        <h2>Create Film</h2>
+    </div>
+
+    <hr />
+    <div class="row">
+        <form asp-action="CreateFilm" enctype="multipart/form-data" method="post">
+
+            <div class="profileInfo">
+                <div class="leftProfile">
+                    <div class="avatarUserBox">
+                        <img id="posterImage" src="~/images/no-poster.jpg" asp-for="PosterPath" style='height: 100%; width: 100%; object-fit: contain'>
+                    </div>
+                    <div class="centerButtonContainer">
+                        <input type="file" id="selectedFile" style="display: none;" name="poster" accept="image/*" />
+                        <input class="btn-theme" type="button" onclick="document.getElementById('selectedFile').click();" title="Update poster" value="Update poster">
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label class="control-label"><b>NAME:</b></label>
+                        <input asp-for="FilmName" class="form-control" />
+                        <span asp-validation-for="FilmName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label"><b>YEAR:</b></label>
+                        <input asp-for="Year" class="form-control" />
+                        <span asp-validation-for="Year" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label"><b>COUNTRY:</b></label>
+                        <input asp-for="Country" class="form-control" />
+                        <span asp-validation-for="Country" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+            </div>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addActorsModal">
+                Add Actors To Film
+            </button>
+
+            <div class="modal fade" id="addActorsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLongTitle">Add Actors</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div id="allActorsContainer" class="modal-body">
+                            
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profileInfo">
+                <div class="leftProfile">
+                    <input type="submit" style="width: 100px" value="Save" class="btn btn-theme btn-block" />
+                </div>
+                <div class="form-group">
+                    <a asp-action="Index" asp-controller="Admin">
+                        <input type="button" style="width: 100px" value="Cancel" class="btn btn-theme btn-block" />
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function readURL(input) {
+
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#posterImage').attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    $("#selectedFile").change(function () {
+        readURL(this);
+    });
+
+    $(document).ready(function () {
+        $("#adminSub").css("background", "#47a7cc")
+        $("#adminText").css("color", "white")
+    })
+
+    $('#addActorsModal').on('show.bs.modal', function (event) {
+        getActors()
+    })
+
+    function getActors() {
+        $.ajax({
+            url: 'GetAllActors',
+            type: 'POST',
+            success: function (result) {
+                let actorsContainer = document.getElementById("allActorsContainer")
+                actorsContainer.innerHTML = ''
+
+                for (var actorIndex in result) {
+                    let actor = result[actorIndex]
+                    var dateFormat = (new Date(actor.dateOfBirth)).toLocaleDateString()
+
+                    actorsContainer.innerHTML += '<div class="smallProfileInfo"><div class="leftProfile"><div class="smallAvatarUserBox"><img src="' + actor.photoPath
+                        + '" style="width: 100%;height: 100%;"></div></div><div class="form-group"><a><b>' + actor.name + '</b></a><p>' + dateFormat + '</p></div></div>'
+                    console.log(result[actorIndex])
+                }
+            }
+        });       
+    }
+</script>
+

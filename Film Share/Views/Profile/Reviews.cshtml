@@ -1,0 +1,22 @@
+﻿@model int
+
+@{
+    ViewData["Title"] = "My Reviews";
+    Layout = "~/Views/Shared/_LayoutMenu.cshtml";
+}
+
+<div class="col-md-6 col-md-offset-3 profileWrap">
+    <div class="text-center">
+        <h2>My Reviews</h2>
+    </div>
+
+     @await Component.InvokeAsync("FilmShare.Components.Profile.Reviews", new { userId = Model})
+
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#reviewsSub").css("background", "#47a7cc")
+        $("#reviewsText").css("color", "white")
+    })    
+</script>

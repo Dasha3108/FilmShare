@@ -1,0 +1,71 @@
+﻿@model FilmShare.ViewModels.FilmModel
+
+@{
+    ViewData["Title"] = Model.FilmName;
+    Layout = "~/Views/Shared/_LayoutMenu.cshtml";
+}
+
+<div class="col-md-6 col-md-offset-3 profileWrap">
+    <div class="text-center">
+        <h2>@Model.FilmName</h2>
+    </div>
+    <div class="profileInfo">
+        <div class="leftProfile">
+            <div class="avatarUserBox">
+                <img src=@Model.PosterPath style='height: 100%; width: 100%; object-fit: contain'>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <p>
+                <b>YEAR: </b>@Model.Year
+            </p>
+            <p>
+                <b>COUNTRY: </b>@Model.Country
+            </p>
+        </div>
+    </div>
+
+    <div class="reviewInputContainer">
+        <p>New review:</p>
+        <div style="margin-left: 5%">
+            <p style="display: inline; vertical-align: top;">Rating: </p> 
+            <select id="reviewRating">
+                @for (int i = 0; i <= 10; i++)
+                {
+                    <option value="@i">@i</option>
+                }
+            </select>
+        </div>
+        <textarea id="reviewText" rows="4" class="reviewInput"></textarea>
+        <input type="button" onclick="addReview(@Model.FilmId)" title="Add review" value="Add review" class="btn reviewButton" />
+    </div>
+
+    <div id="reviewsContainer">
+        @await Component.InvokeAsync("FilmShare.Components.Film.Reviews", new { filmId = Model.FilmId})
+    </div>
+</div>
+
+<script>
+    function addReview(id) {
+        if (!$.trim($("#reviewText").val())) { alert("No review was writen. Can't add the review."); return; }
+        var ratingDDL = document.getElementById("reviewRating");
+        var rating = ratingDDL.options[ratingDDL.selectedIndex].value;
+
+        var data = JSON.stringify({
+            'filmId': parseInt(id),
+            'rating': String(rating),
+            'text': String($('#reviewText').val())
+        });
+
+        $.ajax({
+            url: 'Film/AddReview?filmId=' + id + '&rating=' + rating + '&text=' + $('#reviewText').val(), 
+            type: 'POST',
+            success: function (result) {
+                $('#reviewText').val("");
+
+                $.get("/Film/ReviewsComponent?filmId=" + id, function (data) { $("#reviewsContainer").html(data); });
+            }
+        });        
+    }
+</script>
