@@ -1,4 +1,5 @@
 ﻿using FilmShare.Models.Storage;
+using FilmShare.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,15 @@ namespace FilmShare.ViewComponents.Admin
             _storage = storage;
         }
 
-        public IViewComponentResult Invoke()
+        public IViewComponentResult Invoke(string filter)
         {
-            var actors = _storage.GetAllActors();
+            List<ActorModel> actors;
+
+            if (filter == null || filter == "")
+                actors = _storage.GetAllActors();
+            else
+                actors = _storage.GetAllActorsWithFilter(filter);
+
             return View(actors);
         }
     }

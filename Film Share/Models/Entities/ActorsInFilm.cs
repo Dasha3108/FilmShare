@@ -12,5 +12,7 @@ namespace FilmShare.Models.Entities
 
         public int FilmId { get; set; }
         public virtual Film Film { get; set; }
+
+        public string Role { get; set; } 
     }
 }

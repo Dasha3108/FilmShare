@@ -1,6 +1,7 @@
 ﻿using FilmShare.Models.Entities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
@@ -11,7 +12,11 @@ namespace FilmShare.ViewModels
     {
         public int ProfileId { get; }
         public string Email { get; set; }
+
+        [Required(ErrorMessage = "The name is required")]
         public string Name { get; set; }
+
+        [Required(ErrorMessage = "The date of birth is required")]
         public DateTime DateOfBirth { get; set; }
         public string PhotoPath { get; set; }
         public int UserId { get; set; }

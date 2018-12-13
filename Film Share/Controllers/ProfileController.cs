@@ -19,9 +19,13 @@ namespace FilmShare.Controllers
             _storage = storage;
         }
 
-        [Authorize]
+        [Route("")]
+        [Route("{profileId:dynamicProfile}")]
         public IActionResult Index(int profileId)
         {
+            var isAuthenticated = User.Identity.Name != null;
+            if (!isAuthenticated && profileId == 0) return RedirectToAction("Login", "Account");
+            
             ProfileModel profileModel;
             if (profileId == 0)
             {
@@ -33,24 +37,38 @@ namespace FilmShare.Controllers
             {
                 profileModel = _storage.GetProfileModelById(profileId);
 
-                var currentUserProfile = _storage.GetProfileModelByEmailOrLogin(User.Identity.Name);
-                ViewBag.isCurrentUser = profileModel.ProfileId == currentUserProfile.ProfileId ? true : false;
+                var currentUserProfile = _storage.GetProfileModel(User.Identity.Name);
+
+                if (!isAuthenticated || profileModel == null)
+                    ViewBag.isCurrentUser = false;
+                else
+                    ViewBag.isCurrentUser = profileModel.ProfileId == currentUserProfile.ProfileId ? true : false;
             }
 
-            ViewBag.areFriends = _storage.CheckIfUsersAreFriends(User.Identity.Name, profileModel.UserId);
+            if (profileModel != null)
+            {
+                ViewBag.areFriends = _storage.CheckIfUsersAreFriends(User.Identity.Name, profileModel.UserId);
 
-            return View(profileModel);
+                return View(profileModel);
+            }
+
+            return NotFound();
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> UpdatePhoto(IFormFile photo)
         {
             var userName = User.Identity.Name;
             var profileModel = await _storage.UpdateProfilePhoto(userName, photo);
-            
+
+            ViewBag.isCurrentUser = true;
+
             return View("Index", profileModel);
         }
 
+        [Authorize]
+        [Route("edit")]
         public IActionResult Edit()
         {
             var profile = _storage.GetProfileModel(User.Identity.Name);
@@ -58,6 +76,7 @@ namespace FilmShare.Controllers
             return View(profile);
         }
 
+        [Authorize]
         [HttpPost]
         public IActionResult Edit(ProfileModel profileModel)
         {
@@ -65,7 +84,9 @@ namespace FilmShare.Controllers
 
             return RedirectToAction("Index");
         }
-        
+
+        [Authorize]
+        [Route("friends")]
         public IActionResult Friends()
         {
             var friends = _storage.GetUserFriendsProfiles(User.Identity.Name);
@@ -73,6 +94,8 @@ namespace FilmShare.Controllers
             return View("Friends", friends);
         }
 
+        [Authorize]
+        [Route("reviews")]
         public IActionResult Reviews()
         {
             var userId = _storage.GetUserId(User.Identity.Name);

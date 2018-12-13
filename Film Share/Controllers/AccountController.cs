@@ -8,20 +8,24 @@ using FilmShare.Models.Storage;
 using FilmShare.ViewModels.Account;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace FilmShare.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IStorage _storage;
+        private readonly IStringLocalizer<AccountController> _localizer;
 
-        public AccountController(IStorage storage)
+        public AccountController(IStorage storage, IStringLocalizer<AccountController> localizer)
         {
-            this._storage = storage;
+            _storage = storage;
+            _localizer = localizer;
         }
-
+        
         public IActionResult Login()
         {
             return View("LogIn");
@@ -39,12 +43,12 @@ namespace FilmShare.Controllers
 
                     return RedirectToAction("Index", "Home");
                 }
-                ModelState.AddModelError("", "Incorrect login or password");
+                ModelState.AddModelError("", _localizer["Incorrect login or password"]);
             }
 
             return View("LogIn");
         }
-
+        
         public IActionResult Register()
         {
             return View();
@@ -65,7 +69,7 @@ namespace FilmShare.Controllers
                     return RedirectToAction("Login", "Account");
                 }
                 else
-                    ModelState.AddModelError("", "The user with such login or email already exists");
+                    ModelState.AddModelError("", _localizer["The user with such login or email already exists"]);
             }
 
             return View(model);
@@ -80,6 +84,7 @@ namespace FilmShare.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
         }
 
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

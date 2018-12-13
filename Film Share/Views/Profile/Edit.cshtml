@@ -1,4 +1,8 @@
-﻿@model FilmShare.ViewModels.ProfileModel
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+
+@model FilmShare.ViewModels.ProfileModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -7,7 +11,7 @@
 
 <div class="col-md-6 col-md-offset-3 profileWrap">
     <div class="text-center">
-        <h2>Change Profile Info</h2>
+        <h2>@Localizer["Change Profile Info"]</h2>
     </div>
 
     <hr />
@@ -15,27 +19,27 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label class="control-label"><b>NAME:</b></label>
-                <input asp-for="Name" class="form-control"/>
+                <label class="control-label"><b>@Localizer["NAME:"]</b></label>
+                <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label class="control-label"><b>EMAIL:</b></label>
-                <input asp-for="Email" class="form-control"/>
+                <label class="control-label"><b>@Localizer["EMAIL:"]</b></label>
+                <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label class="control-label"><b>DATE OF BIRTH:</b></label>
+                <label class="control-label"><b>@Localizer["DATE OF BIRTH:"]</b></label>
                 <input asp-for="DateOfBirth" type="date" class="form-control" />
                 <span asp-validation-for="DateOfBirth" class="text-danger"></span>
             </div>
             <div class="profileInfo">
                 <div class="leftProfile">
-                    <input type="submit" style="width: 100px" value="Save" class="btn btn-theme btn-block" />
+                    <input type="submit" style="width: 100px" value="@Localizer["Save"]" class="btn btn-theme btn-block" />
                 </div>
                 <div class="form-group">
                     <a asp-action="Index" asp-controller="Profile">
-                        <input type="button" style="width: 100px" value="Cancel" class="btn btn-theme btn-block" />
+                        <input type="button" style="width: 100px" value="@Localizer["Cancel"]" class="btn btn-theme btn-block" />
                     </a>
                 </div>
             </div>
@@ -44,7 +48,7 @@
 </div>
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $("#profileImg").css("background", "#47a7cc")
     })
 </script>

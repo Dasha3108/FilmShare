@@ -19,12 +19,20 @@ namespace FilmShare.ViewComponents.Search
         {
             List<ProfileModel> users;
 
-            if (filter == null || filter.StartsWith(""))
-                users = _storage.GetAllProfileModelsWithoutFriends(User.Identity.Name);
-
+            var userName = User.Identity.Name;
+            if (filter == null || filter == "")
+            {
+                if (userName != null)
+                    users = _storage.GetAllProfileModelsWithoutFriends(User.Identity.Name);
+                else
+                    users = _storage.GetAllProfiles();
+            }
             else
             {
-                users = _storage.GetProfileModelsWithoutFriendsWithFilter(User.Identity.Name, filter);
+                if (userName != null)
+                    users = _storage.GetProfileModelsWithoutFriendsWithFilter(User.Identity.Name, filter);
+                else
+                    users = _storage.GetAllProfilesWithFilter(filter);
             }
 
             return View(users);

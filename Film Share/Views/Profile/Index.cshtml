@@ -1,20 +1,23 @@
-﻿@model FilmShare.ViewModels.ProfileModel;
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@model FilmShare.ViewModels.ProfileModel;
 
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = Localizer["Profile"];
     Layout = "~/Views/Shared/_LayoutMenu.cshtml";
 }
 
 <div class="col-md-6 col-md-offset-3 profileWrap">
     <div class="text-center">
-        <h2>User Profile</h2>
+        <h2>@Localizer["User Profile"]</h2>
     </div>
     @if (ViewBag.isCurrentUser)
     {
         <div class="col-md-12" style="padding: 10px">
             <div class="text-center">
                 <a asp-action="Edit" asp-controller="Profile">
-                    <button class="btn btn-theme btn-block" type="button"><i class="fa fa-lock"></i>Change Profile</button>
+                    <button class="btn btn-theme btn-block" type="button"><i class="fa fa-lock"></i>@Localizer["Change Profile"]</button>
                 </a>
             </div>
         </div>
@@ -30,7 +33,7 @@
                 <div class="centerButtonContainer">
                     <form id="updatePhotoForm" asp-action="UpdatePhoto" enctype="multipart/form-data" method="post">
                         <input type="file" id="selectedFile" style="display: none;" name="photo" accept="image/*" />
-                        <input class="btn-theme" type="button" onclick="document.getElementById('selectedFile').click();" title="Update photo" value="Update photo">
+                        <input class="btn-theme" type="button" onclick="document.getElementById('selectedFile').click();" title="Update photo" value="@Localizer["Update photo"]">
                     </form>
                 </div>
             }
@@ -38,7 +41,7 @@
         </div>
         <div class="form-group">
             <p>
-                <b>NAME:</b>
+                <b>@Localizer["NAME:"]</b>
                 <span id="name">
                     @{
                         if (Model != null)
@@ -53,7 +56,7 @@
                 </span>
             </p>
             <p>
-                <b>DATE OF BIRTH:</b>
+                <b>@Localizer["DATE OF BIRTH:"]</b>
                 @{
                     if (Model != null)
                     {
@@ -66,7 +69,7 @@
                 }
             </p>
             <p>
-                <b>EMAIL:</b>
+                <b>@Localizer["EMAIL:"]</b>
                 @{
                     if (Model != null)
                     {
@@ -80,22 +83,22 @@
             </p>
             @if (!ViewBag.isCurrentUser)
             {
-                <div id="friendsContainer"> 
-                @if (ViewBag.areFriends)
-                {
-                    <a href="#" onclick="removeFriend(@Model.UserId)">Remove from Friends</a>
-                }
-                else
-                {
-                    <a href="#" onclick="addFriend(@Model.UserId)">Add to Friends</a>
-                }
+                <div id="friendsContainer">
+                    @if (ViewBag.areFriends)
+                    {
+                        <a href="#" onclick="removeFriend(@Model.UserId)">@Localizer["Remove from Friends"]</a>
+                    }
+                    else
+                    {
+                        <a href="#" onclick="addFriend(@Model.UserId)">@Localizer["Add to Friends"]</a>
+                    }
                 </div>
             }
         </div>
     </div>
-    
+
     <div style="margin-top:15px; border-top-width:1px; border-top-color: #424a5d; border-top-style: solid;">
-        <p style="margin-top:5px; font-size:22px;">User Reviews:</p>
+        <p style="margin-top:5px; font-size:22px;">@Localizer["User Reviews:"]</p>
         @await Component.InvokeAsync("FilmShare.Components.Profile.Reviews", new { userId = Model.UserId })
     </div>
 </div>
@@ -129,6 +132,12 @@
                         this.close();
                     }
                 });
+            },
+            error: function (error) {
+                switch (error.status) {
+                    case 401:
+                        alert("You should be authorized to be able to add friend")
+                }
             }
         });
     }
@@ -150,18 +159,24 @@
                         this.close();
                     }
                 });
+            },
+            error: function (error) {
+                switch (error.status) {
+                    case 401:
+                        alert("You should be authorized to be able to remove friend")
+                }
             }
         });
     }
-    
+
     function updateDataToAddFriend() {
-        $('#friendsContainer').empty();        
+        $('#friendsContainer').empty();
 
         $('<a href="#" onclick="addFriend(' + @Model.UserId + ')">Add to Friends</a>').appendTo($('#friendsContainer'));
     }
-    
+
     function updateDataToRemoveFriend() {
-        $('#friendsContainer').empty();        
+        $('#friendsContainer').empty();
 
         $('<a href="#" onclick="removeFriend(' + @Model.UserId + ')">Remove from Friends</a>').appendTo($('#friendsContainer'));
     }

@@ -30,7 +30,9 @@ namespace FilmShare.Models.DataAccessLayer
             base.OnModelCreating(modelBuilder);
             
             modelBuilder.Entity<UserPermission>().HasKey(up => new { up.PermissionId, up.UserId });
+
             modelBuilder.Entity<ActorsInFilm>().HasKey(af => new { af.ActorId, af.FilmId });
+            modelBuilder.Entity<ActorsInFilm>().Property(af => af.Role).HasDefaultValue("No information");
 
             modelBuilder.Entity<UserRelationships>().HasKey(ur => new { ur.MainUserId, ur.DependentUserId });
             modelBuilder.Entity<UserRelationships>().HasOne(ur => ur.MainUser)
@@ -39,6 +41,8 @@ namespace FilmShare.Models.DataAccessLayer
             modelBuilder.Entity<UserRelationships>().HasOne(ur => ur.DependentUser)
                      .WithMany(du => du.DependentUserRelationships)
                      .HasForeignKey(ur => ur.DependentUserId).OnDelete(DeleteBehavior.Restrict);
+
+            
         }
     }
 }

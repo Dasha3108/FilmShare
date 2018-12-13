@@ -42,6 +42,10 @@ namespace FilmShare.Migrations
 
                     b.Property<int>("FilmId");
 
+                    b.Property<string>("Role")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue("No information");
+
                     b.HasKey("ActorId", "FilmId");
 
                     b.HasIndex("FilmId");

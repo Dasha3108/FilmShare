@@ -1,4 +1,7 @@
-﻿@model FilmShare.ViewModels.FilmModel
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@model FilmShare.ViewModels.FilmModel
 
 @{
     ViewData["Title"] = Model.FilmName;
@@ -18,54 +21,86 @@
 
         <div class="form-group">
             <p>
-                <b>YEAR: </b>@Model.Year
+                <b>@Localizer["YEAR:"] </b>@Model.Year
             </p>
             <p>
-                <b>COUNTRY: </b>@Model.Country
+                <b>@Localizer["COUNTRY:"] </b>@Model.Country
             </p>
-        </div>
+            <p>
+                <b>@Localizer["AVERAGE RANK:"] </b>
+                <span id="rank">
+                    @if (Model.AverageRank == 0)
+                    {
+                        @Localizer["No ranks were found"]
+                    }
+                    else
+                    {
+                        @: @Model.AverageRank
+                                            }
+                    </span>
+            </p>
+            <a asp-controller="Film" asp-action="FilmActors" asp-route-filmId="@Model.FilmId">@Localizer["Show Film Actors"]</a>
+</div>
     </div>
 
     <div class="reviewInputContainer">
-        <p>New review:</p>
+        <p>@Localizer["New review:"]</p>
         <div style="margin-left: 5%">
-            <p style="display: inline; vertical-align: top;">Rating: </p> 
-            <select id="reviewRating">
-                @for (int i = 0; i <= 10; i++)
-                {
-                    <option value="@i">@i</option>
-                }
-            </select>
+            <p style="display: inline; vertical-align: top;">@Localizer["Rating:"] </p>
+            <rating id="reviewRating"></rating>
         </div>
         <textarea id="reviewText" rows="4" class="reviewInput"></textarea>
-        <input type="button" onclick="addReview(@Model.FilmId)" title="Add review" value="Add review" class="btn reviewButton" />
+        <input type="button" onclick="addReview(@Model.FilmId)" title="Add review" value="@Localizer["Add review"]" class="btn reviewButton" />
     </div>
 
     <div id="reviewsContainer">
-        @await Component.InvokeAsync("FilmShare.Components.Film.Reviews", new { filmId = Model.FilmId})
+        @await Component.InvokeAsync("FilmShare.Components.Film.Reviews", new { filmId = Model.FilmId })
     </div>
 </div>
 
+<script src="~/lib/signalr/dist/browser/signalr.js"></script>
 <script>
+    "use strict";
+
+    var connection = new signalR.HubConnectionBuilder().withUrl("/review").build();
+
+    connection.on("ReceiveReview", function (responce) {
+        console.log(responce);
+        if (!responce.item1) alert("Error in adding the review");
+
+        document.getElementById("rank").innerHTML = responce.item3;
+
+        let review = responce.item2;
+
+        var reviewClass = "review";
+        if (review.rating >= 8) {
+            reviewClass += " good";
+        }
+        else if (review.rating <= 4) {
+            reviewClass += " bad";
+        }
+
+        let date = new Date(review.reviewDate)
+        let dateFormat = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+
+        let html = '<div class="' + reviewClass + '"><div><img width="46" class="reviewProfilePhoto" src="' + review.userPhotoPath +
+            '"><div><p class="profile_name"><s></s><a href="/' + review.profileId + '"><b>' + review.userName + '</b></a></p></div></div><table><tbody><tr><td><div><p><span>'
+            + review.text + '</span><br><br><span>Rating: ' + review.rating + '</span></p></div></td></tr></tbody></table><span class="reviewDate">' + dateFormat + '</span></div>';
+
+        $("#reviewsContainer").html(html + $("#reviewsContainer").html())
+    });
+
+    connection.start().catch(function (err) {
+        return console.error(err.toString());
+    });
+
     function addReview(id) {
         if (!$.trim($("#reviewText").val())) { alert("No review was writen. Can't add the review."); return; }
         var ratingDDL = document.getElementById("reviewRating");
         var rating = ratingDDL.options[ratingDDL.selectedIndex].value;
 
-        var data = JSON.stringify({
-            'filmId': parseInt(id),
-            'rating': String(rating),
-            'text': String($('#reviewText').val())
+        connection.invoke("AddReview", id, rating, $('#reviewText').val()).catch(function (err) {
+            return console.error(err.toString());
         });
-
-        $.ajax({
-            url: 'Film/AddReview?filmId=' + id + '&rating=' + rating + '&text=' + $('#reviewText').val(), 
-            type: 'POST',
-            success: function (result) {
-                $('#reviewText').val("");
-
-                $.get("/Film/ReviewsComponent?filmId=" + id, function (data) { $("#reviewsContainer").html(data); });
-            }
-        });        
     }
 </script>

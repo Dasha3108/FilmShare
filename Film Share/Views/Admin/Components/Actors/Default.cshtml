@@ -1,25 +1,47 @@
 ﻿@model List<FilmShare.ViewModels.ActorModel>
 
-<a asp-action="CreateActor" asp-controller="Admin">
-    <input class="btn-theme createButton" type="button" title="Create actor" value="Create actor">
-</a>
-<div id="usersContainer">
-    @if (Model.Count == 0)
-    {
-        <label>No actors were found</label>
-    }
-    @foreach (var actor in Model)
-    {
-        <div class="smallProfileInfo">
-            <div class="leftProfile">
-                <div class="smallAvatarUserBox">
-                    <img src=@actor.PhotoPath style='height: 100%; width: 100%; object-fit: contain'>
+<div id="actorsContainers">
+    <a asp-action="CreateActor" asp-controller="Admin">
+        <input class="btn-theme createButton" type="button" title="Create actor" value="Create actor">
+    </a>
+    <div id="actorsContainer">
+        @if (Model.Count == 0)
+        {
+            <label>No actors were found</label>
+        }
+        @foreach (var actor in Model)
+        {
+            <div class="smallProfileInfo" id="actor_@actor.ActorId">
+                <div class="leftProfile">
+                    <div class="smallAvatarUserBox">
+                        <img src=@actor.PhotoPath style='height: 100%; width: 100%; object-fit: contain'>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <a asp-action="Index" asp-controller="Actor" asp-route-actorId="@actor.ActorId"><b>@actor.Name</b></a>
+                    <p>@actor.DateOfBirth.ToShortDateString()</p>
+                    <a asp-controller="Admin" asp-action="EditActor" asp-route-actorId="@actor.ActorId">Edit Actor</a>
+                    <p style="margin-top: 0px">
+                        <a href="#" onclick="deleteActor(@actor.ActorId)">Delete Actor</a>
+                    </p>
                 </div>
             </div>
-            <div class="form-group">
-                <a><b>@actor.Name</b></a>
-                <p>@actor.DateOfBirth.ToShortDateString()</p>
-            </div>
-        </div>
-    }
+        }
+    </div>
 </div>
+
+<script>
+    function deleteActor(id) {
+        $.ajax({
+            url: '/Admin/DeleteActor?actorId=' + id,
+            type: 'POST',
+            success: function (result) {
+                if (!result) { alert("Error in the actor deleting"); return; }
+
+                let actorsContainer = document.getElementById("actorsContainer")
+                let actorContainer = document.getElementById("actor_" + id)
+                actorsContainer.removeChild(actorContainer)
+            }
+        });
+    }
+</script>

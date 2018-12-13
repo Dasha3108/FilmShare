@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FilmShare.Models.DataAccessLayer;
 using FilmShare.Models.Storage;
 using FilmShare.Models.Storage.EntityFramework;
@@ -9,12 +6,19 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Session;
+using FilmShare.Attributes;
+using Microsoft.AspNetCore.Routing;
+using FilmShare.Constraints;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.Razor;
+using System.Collections.Generic;
+using FilmShare.Hubs;
 
 namespace Film_Share
 {
@@ -30,6 +34,8 @@ namespace Film_Share
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
+
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -46,19 +52,49 @@ namespace Film_Share
                 {
                     options.LoginPath = new PathString("/Account/Login");
                 });
+            services.AddHttpContextAccessor();
+            services.AddScoped<CheckAdminFilter>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1).AddSessionStateTempDataProvider();
-            
+            services.Configure<RouteOptions>(routeOptions =>
+            {
+                routeOptions.ConstraintMap.Add("dynamicActor", typeof(DynamicActorConstraint));
+                routeOptions.ConstraintMap.Add("dynamicFilm", typeof(DynamicFilmConstraint));
+                routeOptions.ConstraintMap.Add("dynamicProfile", typeof(DynamicProfileConstraint));
+            });
+
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddSessionStateTempDataProvider()
+                .AddDataAnnotationsLocalization()
+                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
+
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromSeconds(3600);
                 options.Cookie.HttpOnly = false;
             });
+
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("ru"),
+                    new CultureInfo("en")
+                };
+
+                options.DefaultRequestCulture = new RequestCulture("en");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+            });
+
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            var locOptions = app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
+            app.UseRequestLocalization(locOptions.Value);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -80,6 +116,11 @@ namespace Film_Share
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
+            });
+
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<ReviewsHub>("/review");
             });
 
             AddDatabaseData.AddData(app);

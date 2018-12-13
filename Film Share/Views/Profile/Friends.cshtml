@@ -1,19 +1,22 @@
-﻿@model List<FilmShare.ViewModels.ProfileModel>
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@model List<FilmShare.ViewModels.ProfileModel>
 
 @{
-    ViewData["Title"] = "My Friends";
+    ViewData["Title"] = @Localizer["My Friends"];
     Layout = "~/Views/Shared/_LayoutMenu.cshtml";
 }
 
 <div class="col-md-6 col-md-offset-3 profileWrap">
     <div class="text-center">
-        <h2>My Friends</h2>
+        <h2>@Localizer["My Friends"]</h2>
 
         @if (Model.Count == 0)
         {
-            @:No friends were found.
+            @Localizer["No friends were found."] 
             <a asp-action="Index" asp-controller="Search">
-                Search friends to add them
+                @Localizer["Search friends to add them"]
             </a>
         }
 
@@ -23,12 +26,12 @@
                 <label id="numberOfFriends" style="text-align:center">
                     @if (Model.Count > 1)
                     {
-                        @: You have @Model.Count
-                        @: friends
+                        @Localizer["You have"] <span> </span> @Model.Count
+                        <span> </span> @Localizer["friends"]
                     }
                     else
                     {
-                        @:You have 1 friend
+                        @Localizer["You have 1 friend"]
                     }
                 </label>
             </div>
@@ -45,7 +48,7 @@
                             <a id="name @friend.UserId" asp-controller="Profile" asp-action="Index" asp-route-profileId=@friend.ProfileId><b>@friend.Name</b></a>
                             <p>@friend.DateOfBirth.ToShortDateString()</p>
                             <p>@friend.Email</p>
-                            <a href="#" onclick="removeFriend(@friend.UserId)">Remove from Friends</a>
+                            <a href="#" onclick="removeFriend(@friend.UserId)">@Localizer["Remove from Friends"]</a>
                         </div>
                     </div>
                 }
@@ -97,7 +100,7 @@
             $('#numberOfFriendsContainer').append($('<a href="/Search/Index/"> Search friends to add them</a>'));
         }
     }
-    
+
     function getData() {
         $.ajax({
             type: 'GET',
@@ -111,11 +114,11 @@
 
                     $('<div class="smallProfileInfo"><div class= "leftProfile"><div class="smallAvatarUserBox"><img src="'
                         + item.photoPath + '" style="height: 100%; width: 100%; object-fit: contain"></div></div><div class="form-group"><a href="/Profile?profileId='
-                        + item.profileId + '" id="name ' + item.userId +'"><b>'
+                        + item.profileId + '" id="name ' + item.userId + '"><b>'
                         + item.name + '</b></a><p>' + dateFormat + '</p><p>' + item.email + '</p><a href="#" onclick="removeFriend('
                         + item.userId + ')">Remove from Friends</a></div></div >').appendTo($('#friendsContainer'));
                 });
-                
+
             }
         });
     }

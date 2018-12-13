@@ -177,3 +177,7 @@ body {
     color: white;
     float: right;
 }
+
+#filmActorsContainer {
+    margin-bottom: 10px
+}

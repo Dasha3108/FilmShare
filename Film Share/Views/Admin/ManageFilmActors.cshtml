@@ -1,0 +1,183 @@
+﻿@model (List<FilmShare.ViewModels.RoleModel>, int filmId)
+
+@{
+    ViewData["Title"] = "Manage Actors";
+    Layout = "~/Views/Shared/_LayoutMenu.cshtml";
+}
+
+<div class="col-md-6 col-md-offset-3 profileWrap">
+    <div class="text-center">
+        <h2>Manage Actors</h2>
+    </div>
+
+    <hr />
+    <div class="row">
+            <input type="hidden" value="@Model.filmId" id="filmId" />
+
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addActorsModal">
+                Add Actors To Film
+            </button>
+            <div id="filmActorsContainer">
+                @foreach (var role in Model.Item1)
+                {
+                    <div class="smallProfileInfo" id="actor_@role.Actor.ActorId">
+                        <div class="leftProfile">
+                            <div class="smallAvatarUserBox">
+                                <img src=@role.Actor.PhotoPath style='height: 100%; width: 100%; object-fit: contain'>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <a asp-action="Index" asp-controller="Actor" asp-route-actorId="@role.Actor.ActorId"><b>@role.Actor.Name</b></a>
+                            <p>@role.Actor.DateOfBirth.ToShortDateString()</p>
+                            <p style="margin-bottom: 0px">Role: <span id="roleText_@role.Actor.ActorId">@role.Title</span></p>
+                            <a id="changeRole" href="#" data-id="@role.Actor.ActorId" data-toggle="modal" data-target="#addRoleModal">Change Role</a>
+                            <p style="margin-top: 10px"><a href="#" onclick="removeFromFilm(@role.Actor.ActorId)">Remove From Film</a></p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="modal fade" id="addActorsModal" tabindex="-2" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLongTitle">Add Actors</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div id="allActorsContainer" class="modal-body"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="modal fade" id="addRoleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLongTitle">Add Actors</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input id="actorRoleId" type="hidden" />
+                            <input id="roleInput" type="text" style="width: 100%;" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" onclick="saveRole()">Add Role</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profileInfo">
+                <div class="form-group">
+                    <a asp-action="Index" asp-controller="Admin">
+                        <input type="button" style="width: 100px" value="Cancel" class="btn btn-theme btn-block" />
+                    </a>
+                </div>
+            </div>
+    </div>
+</div>
+
+<script>
+    $(document).on("click", "#changeRole", function () {
+        var actorId = $(this).data('id');
+        var role = $("#roleText_" + actorId).html()
+        $(".modal-body #roleInput").val(role);
+        $(".modal-body #actorRoleId").val(actorId);
+    });
+
+    $(document).ready(function () {
+        $("#adminSub").css("background", "#47a7cc")
+        $("#adminText").css("color", "white")
+    })
+
+    $('#addActorsModal').on('show.bs.modal', function (event) {
+        getActors()
+    })
+
+    function saveRole() {
+        var actorId = $(".modal-body #actorRoleId").val();
+        $("#roleText_" + actorId).html($(".modal-body #roleInput").val());
+        $('#addRoleModal').modal('toggle');
+
+        $.ajax({
+            url: 'ChangeActorRole?actorId=' + actorId + '&filmId=' + document.getElementById("filmId").value + '&title=' + document.getElementById("roleText_" + actorId).innerHTML,
+            type: 'POST'
+        });
+    }
+
+    function getActors() {
+        $.ajax({
+            url: 'GetAllActors?filmId=' + document.getElementById("filmId").value,
+            type: 'POST',
+            success: function (result) {
+                let actorsContainer = document.getElementById("allActorsContainer")
+                actorsContainer.innerHTML = ''
+
+                for (var actorIndex in result) {
+                    let actor = result[actorIndex]
+                    var dateFormat = (new Date(actor.dateOfBirth)).toLocaleDateString()
+                    var action = (!actor.isInCurrentFilm ? "addToFilm(" : "removeFromFilm(") + actor.actorId + ")"
+                    var actionText = !actor.isInCurrentFilm ? "Add to Film" : "Remove from Film"
+
+                    actorsContainer.innerHTML += '<div class="smallProfileInfo" id="addActor' + actor.actorId + '"><div class="leftProfile"><div class="smallAvatarUserBox"><img src="'
+                        + actor.photoPath + '" style="width: 100%;height: 100%;"></div></div><div class="form-group"><a href="/Actor?actorId=' + actor.actorId + '"><b>'
+                        + actor.name + '</b></a><p>' + dateFormat + '</p><p style="margin-bottom: 0px">Role: <span id="roleText_' + actor.actorId
+                        + '">No information</span></p><a id="changeRole" href="#" data-id="' + actor.actorId + '" data-toggle="modal" data-target="#addRoleModal"' //+
+                        + '">Change Role</a><p style="margin-top: 10px"><a href="#" onclick="'
+                        + action + '">' + actionText + '</a></p></div></div>'
+                }
+            }
+        });
+    }
+
+    function addToFilm(actorId) {        
+        $.ajax({
+            url: 'AddActorToFilm?actorId=' + actorId + '&filmId=' + document.getElementById("filmId").value + '&title=' + document.getElementById("roleText_" + actorId).innerHTML,
+            type: 'POST',
+            success: function (result) {
+                console.log(result)
+                if (!result.success) { alert("Error in adding the actor to the film"); return; }
+
+                let actorsContainer = document.getElementById("filmActorsContainer")
+                let actor = result.role.actor
+                var dateFormat = (new Date(actor.dateOfBirth)).toLocaleDateString()
+
+                let allActorsContainer = document.getElementById("allActorsContainer")
+                let actorContainer = document.getElementById("addActor" + actorId)
+                allActorsContainer.removeChild(actorContainer)
+
+                actorsContainer.innerHTML += '<div class="smallProfileInfo" id="actor_' + actor.actorId + '"><div class="leftProfile"><div class="smallAvatarUserBox"><img src="'
+                    + actor.photoPath + '" style="width: 100%;height: 100%;"></div></div><div class="form-group"><a href="/Actor?actorId=' + actor.actorId + '"><b>'
+                    + actor.name + '</b></a><p>' + dateFormat + '</p><p style="margin-bottom: 0px">Role: <span id="roleText_' + actor.actorId + '">' + result.role.title + '</span></p><a id="changeRole" href="#" data-id="'
+                    + actor.actorId + '" data-toggle="modal" data-target="#addRoleModal">Change Role</a><p style="margin-top: 10px"><a href="#" onclick=removeFromFilm('
+                    + actor.actorId + ')>Remove From Film</a></p></div></div>'
+            }
+        });
+    }
+
+    function removeFromFilm(actorId) {
+
+        $.ajax({
+            url: 'RemoveActorFromFilm?actorId=' + actorId + '&filmId=' + document.getElementById("filmId").value,
+            type: 'POST',
+            success: function (result) {
+                if (!result) { alert("Error in removing the actor from the film"); return; }
+
+                let actorsContainer = document.getElementById("filmActorsContainer")
+                let actorContainer = document.getElementById("actor_" + actorId)
+                actorsContainer.removeChild(actorContainer)
+            }
+        });
+    }
+
+</script>
+
+

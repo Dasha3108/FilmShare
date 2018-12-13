@@ -1,26 +1,51 @@
 ﻿@model List<FilmShare.ViewModels.FilmModel>
 
-<a asp-action="CreateFilm" asp-controller="Admin">
-    <input class="btn-theme createButton" type="button" title="Create film" value="Create film">
-</a>
-<div id="usersContainer">
-    @if (Model.Count == 0)
-    {
-        <label>No films were found</label>
-    }
-    @foreach (var film in Model)
-    {
-        <div class="smallProfileInfo">
-            <div class="leftProfile">
-                <div class="smallAvatarUserBox">
-                    <img src=@film.PosterPath style='height: 100%; width: 100%; object-fit: contain'>
+<div id="filmsContainers">
+    <a asp-action="CreateFilm" asp-controller="Admin">
+        <input class="btn-theme createButton" type="button" title="Create film" value="Create film">
+    </a>
+    <div id="filmsContainer">
+        @if (Model.Count == 0)
+        {
+            <label>No films were found</label>
+        }
+        @foreach (var film in Model)
+        {
+            <div class="smallProfileInfo" id="film_@film.FilmId">
+                <div class="leftProfile">
+                    <div class="smallAvatarUserBox">
+                        <img src=@film.PosterPath style='height: 100%; width: 100%; object-fit: contain'>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <a asp-controller="Film" asp-action="Index" asp-route-filmId=@film.FilmId><b>@film.FilmName</b></a>
+                    <p>@film.Year</p>
+                    <p>@film.Country</p>
+                    <a asp-action="EditFilm" asp-controller="Admin" asp-route-filmId="@film.FilmId">Edit Film</a>
+                    <p style="margin-top: 0px; margin-bottom: 0px">
+                        <a asp-action="ManageFilmActors" asp-controller="Admin" asp-route-filmId="@film.FilmId">Manage Actors</a>
+                    </p>
+                    <p style="margin-top: 0px">
+                        <a href="#" onclick="deleteFilm(@film.FilmId)">Delete Film</a>
+                    </p>
                 </div>
             </div>
-            <div class="form-group">
-                <a><b>@film.FilmName</b></a>
-                <p>@film.Year</p>
-                <p>@film.Country</p>
-            </div>
-        </div>
-    }
+        }
+    </div>
 </div>
+
+<script>
+    function deleteFilm(id) {
+        $.ajax({
+            url: '/Admin/DeleteFilm?filmId=' + id,
+            type: 'POST',
+            success: function (result) {
+                if (!result) { alert("Error in the actor deleting"); return; }
+
+                let filmsContainer = document.getElementById("filmsContainer")
+                let filmContainer = document.getElementById("film_" + id)
+                filmsContainer.removeChild(filmContainer)
+            }
+        });
+    }
+</script>

@@ -1,9 +1,24 @@
-﻿@{
+﻿@using FilmShare.ViewModels
+@model FilmShare.ViewModels.TabViewModel
+
+@{
     ViewData["Title"] = "Administration";
     Layout = "~/Views/Shared/_LayoutMenu.cshtml";
+
+    var action = "";
+    switch (Model.ActiveTab)
+    {
+        case Tab.Users:
+            action = "users()";
+            break;
+        case Tab.Actors:
+            action = "actors()";
+            break;
+        case Tab.Films:
+            action = "films()";
+            break;
+    }
 }
-@using FilmShare.ViewModels
-@model FilmShare.ViewModels.TabViewModel
 
 <div class="col-md-6 col-md-offset-3 profileWrap">
     <div class="text-center">
@@ -14,7 +29,9 @@
             <li><a class="@(Model.ActiveTab == Tab.Actors ? "btn active" : "btn tab")" asp-route-tabname="Actors" asp-action="SwitchTabs">Actors</a></li>
             <li><a class="@(Model.ActiveTab == Tab.Films ? "btn active" : "btn tab")" asp-route-tabname="Films" asp-action="SwitchTabs">Films</a></li>
         </ul>
-        
+
+        <input id="filter" type="text" onkeyup="@action" class="filterBar" />
+
         @switch (Model.ActiveTab)
         {
             case Tab.Users:
@@ -37,4 +54,19 @@
         $("#adminSub").css("background", "#47a7cc")
         $("#adminText").css("color", "white")
     })
+
+    function users() {
+        var container = $("#usersContainer");
+        $.get("/Admin/UsersComponent?filter=" + $("#filter").val(), function (data) { container.html(data); });
+    }
+
+    function actors() {
+        var container = $("#actorsContainers");
+        $.get("/Admin/ActorsComponent?filter=" + $("#filter").val(), function (data) { container.html(data); });
+    }
+
+    function films() {
+        var container = $("#filmsContainers");
+        $.get("/Admin/FilmsComponent?filter=" + $("#filter").val(), function (data) { container.html(data); });
+    }
 </script>

@@ -1,36 +1,55 @@
 ﻿@using FilmShare.ViewModels
 @model FilmShare.ViewModels.TabViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 
 @{
-    ViewData["Title"] = "Search";
+    ViewData["Title"] = Localizer["Search"];
     Layout = "~/Views/Shared/_LayoutMenu.cshtml";
+    var isAuthorized = User.Identity.Name != null;
+
+    var action = "";
+    switch (Model.ActiveTab)
+    {
+        case Tab.Friends:
+            action = "friends()";
+            break;
+        case Tab.Actors:
+            action = "actors()";
+            break;
+        case Tab.Films:
+            action = "films()";
+            break;
+    }
+
 }
 
 
 <div class="col-md-6 col-md-offset-3 profileWrap">
     <div class="text-center">
-        <h2>Search</h2>
+        <h2>@Localizer["Search"]</h2>
 
         <ul id="navbar" class="nav nav-tabs" style="margin-top: 20px!important; margin-bottom:20px">
-            <li><a class="@(Model.ActiveTab == Tab.Friends ? "btn active" : "btn tab")" asp-route-tabname="Friends" asp-action="SwitchTabs">Friends</a></li>
-            <li><a class="@(Model.ActiveTab == Tab.Actors ? "btn active" : "btn tab")" asp-route-tabname="Actors" asp-action="SwitchTabs">Actors</a></li>
-            <li><a class="@(Model.ActiveTab == Tab.Films ? "btn active" : "btn tab")" asp-route-tabname="Films" asp-action="SwitchTabs">Films</a></li>
+            <li><a class="@(Model.ActiveTab == Tab.Friends ? "btn active" : "btn tab")" asp-route-tabname="Friends" asp-action="SwitchTabs">@Localizer["Friends"]</a></li>
+            <li><a class="@(Model.ActiveTab == Tab.Actors ? "btn active" : "btn tab")" asp-route-tabname="Actors" asp-action="SwitchTabs">@Localizer["Actors"]</a></li>
+            <li><a class="@(Model.ActiveTab == Tab.Films ? "btn active" : "btn tab")" asp-route-tabname="Films" asp-action="SwitchTabs">@Localizer["Films"]</a></li>
         </ul>
 
-        @*<input id="filter" type="text" class="filterBar"/>*@
+        <input id="filter" type="text" onkeyup="@action" class="filterBar" />
 
-        @switch (Model.ActiveTab) {
-                case Tab.Friends:
-                    @await Component.InvokeAsync("FilmShare.ViewComponents.Search.Friends");
-                    break;
-                case Tab.Actors:
-                    @await Component.InvokeAsync("FilmShare.ViewComponents.Search.Actors");
-                    break;
-                case Tab.Films:
-                    @await Component.InvokeAsync("FilmShare.ViewComponents.Search.Films");
-                    break;
-            }
-        
+        @switch (Model.ActiveTab)
+    {
+            case Tab.Friends:
+                @await Component.InvokeAsync("FilmShare.ViewComponents.Search.Friends");
+                break;
+            case Tab.Actors:
+                @await Component.InvokeAsync("FilmShare.ViewComponents.Search.Actors");
+                break;
+            case Tab.Films:
+                @await Component.InvokeAsync("FilmShare.ViewComponents.Search.Films");
+                break;
+        }
+
 
     </div>
 </div>
@@ -39,6 +58,22 @@
     $(document).ready(function () {
         $("#searchSub").css("background", "#47a7cc")
         $("#searchText").css("color", "white")
-    })    
+    })
+
+    function friends() {
+        var container = $("#friendsContainer");
+        $.get("/Search/FriendsComponent?filter=" + $("#filter").val(), function (data) { container.html(data); });
+    }
+
+    function actors() {
+        var container = $("#actorsContainer");
+        $.get("/Search/ActorsComponent?filter=" + $("#filter").val(), function (data) { container.html(data); });
+    }
+
+    function films() {
+        var container = $("#filmsContainer");
+        $.get("/Search/FilmsComponent?filter=" + $("#filter").val(), function (data) { container.html(data); });
+    }
+    
 </script>
 

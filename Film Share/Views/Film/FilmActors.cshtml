@@ -1,0 +1,36 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@model (List<FilmShare.ViewModels.RoleModel>, string filmName)
+
+@{
+    ViewData["Title"] = Localizer["The Actors of"] + " " + Model.filmName;
+    Layout = "~/Views/Shared/_LayoutMenu.cshtml";
+}
+
+<div class="col-md-6 col-md-offset-3 profileWrap">
+    <div class="text-center">
+        <h2>@Localizer["The Actors of"] @Model.filmName</h2>
+    </div>
+    <div id="usersContainer">
+        @if (Model.Item1.Count == 0)
+        {
+            <label>@Localizer["No actors were found"]</label>
+        }
+        @foreach (var role in Model.Item1)
+        {
+            <div class="smallProfileInfo">
+                <div class="leftProfile">
+                    <div class="smallAvatarUserBox">
+                        <img src=@role.Actor.PhotoPath style='height: 100%; width: 100%; object-fit: contain'>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <a asp-controller="Actor" asp-action="Index" asp-route-actorId=@role.Actor.ActorId><b>@role.Actor.Name</b></a>
+                    <p>@role.Actor.DateOfBirth.ToShortDateString()</p>
+                    <p>@Localizer["Role:"] @role.Title</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

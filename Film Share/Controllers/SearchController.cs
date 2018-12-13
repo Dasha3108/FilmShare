@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using FilmShare.Models.Storage;
 using FilmShare.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace FilmShare.Controllers
 {
@@ -19,7 +14,7 @@ namespace FilmShare.Controllers
             _storage = storage;
         }
 
-        [Authorize]
+        [Route("search")]
         public IActionResult Index(TabViewModel tab)
         {
             if (tab == null)
@@ -51,11 +46,31 @@ namespace FilmShare.Controllers
 
             return RedirectToAction("Index", tab);
         }
-
+        
         public JsonResult Friends()
         {
-            var users = _storage.GetAllProfileModelsWithoutFriends(User.Identity.Name);
+            var userName = User.Identity.Name;
+            var users = new List<ProfileModel>();
+            if (userName != null)
+                users = _storage.GetAllProfileModelsWithoutFriends(User.Identity.Name);
+            else
+                users = _storage.GetAllProfiles();
             return Json(users);
+        }
+
+        public IActionResult ActorsComponent(string filter)
+        {
+            return ViewComponent("FilmShare.ViewComponents.Search.Actors", filter);
+        }
+
+        public IActionResult FilmsComponent(string filter)
+        {
+            return ViewComponent("FilmShare.ViewComponents.Search.Films", filter);
+        }
+
+        public IActionResult FriendsComponent(string filter)
+        {
+            return ViewComponent("FilmShare.ViewComponents.Search.Friends", filter);
         }
     }
 }

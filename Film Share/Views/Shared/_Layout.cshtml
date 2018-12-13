@@ -25,6 +25,11 @@
                 <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
             </div>
             <a href="/" class="logo"><b>Film Share</b></a>
+
+            <div class="col-md-3 text-right col-md-offset-7" style="margin-top: 18px">
+                @await Html.PartialAsync("_SelectLanguagePartial")
+            </div>
+
             <div class="top-menu">
                 <ul class="nav pull-right top-menu">
                     <li><a id="logoutButton" class="logout" asp-action="Logout" asp-controller="Account">Logout</a></li>
@@ -33,6 +38,7 @@
         </header>
         @RenderBody()
 
+        @RenderSection("scripts", required: false)
     </section>
 </body>
 </html>

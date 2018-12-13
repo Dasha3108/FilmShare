@@ -1,5 +1,6 @@
 ﻿@model List<FilmShare.ViewModels.ProfileModel>
 
+@inject FilmShare.Models.Storage.IStorage storage
 <div id="usersContainer">
 @if (Model.Count == 0)
 {
@@ -14,10 +15,48 @@
             </div>
         </div>
         <div class="form-group">
-            <a><b>@profile.Name</b></a>
+            <a id="name @profile.UserId" asp-controller="Profile" asp-action="Index" asp-route-profileId=@profile.ProfileId><b>@profile.Name</b></a>
             <p>@profile.DateOfBirth.ToShortDateString()</p>
             <p>@profile.Email</p>
+            @if (!storage.IsUserAdmin(profile.UserId))
+            {
+                <a id="permission_@profile.UserId" href="#" onclick="addAdminPermission(@profile.UserId)">Add Admin Permission</a>
+            }
+            else
+            {
+                <a id="permission_@profile.UserId" href="#" onclick="removeAdminPermission(@profile.UserId)">Remove Admin Permission</a>
+            }
         </div>
     </div>
 }
 </div>
+
+<script>
+    function addAdminPermission(userId) {
+        $.ajax({
+            url: '/Admin/AddAdminPermission?userId=' + userId + '&permissionId=1',
+            type: 'POST',
+            success: function (result) {
+                if (!result) { alert("Error in adding the user permission"); return; }
+
+                var action = document.getElementById("permission_" + userId)
+                action.onclick = function () { removeAdminPermission(userId); }
+                action.innerHTML = "Remove Admin Permission"
+            }
+        });
+    }
+
+    function removeAdminPermission(userId) {
+        $.ajax({
+            url: '/Admin/RemoveAdminPermission?userId=' + userId + '&permissionId=1',
+            type: 'POST',
+            success: function (result) {
+                if (!result) { alert("Error in removing the user permission"); return; }
+
+                var action = document.getElementById("permission_" + userId)
+                action.onclick = function () { addAdminPermission(userId); }
+                action.innerHTML = "Add Admin Permission"
+            }
+        });
+    }
+</script>

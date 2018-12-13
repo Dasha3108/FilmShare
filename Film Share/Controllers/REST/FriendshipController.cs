@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FilmShare.Models.Storage;
 using FilmShare.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,7 @@ namespace FilmShare.Controllers
 {
     [Route("api/Friendship")]
     [ApiController]
+    [Authorize]
     public class FriendshipController : ControllerBase
     {
         private readonly IStorage _storage;

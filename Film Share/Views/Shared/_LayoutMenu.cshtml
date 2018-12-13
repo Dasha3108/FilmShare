@@ -1,11 +1,20 @@
-﻿@inject FilmShare.Models.Storage.IStorage storage
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@inject FilmShare.Models.Storage.IStorage storage
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     var userName = User.Identity.Name;
-    var info = storage.GetCurrentUserInfo(userName);
+    var isAuthorized = userName == null ? false : true;
 
-    var isAdmin = storage.IsUserAdmin(userName);
+    var info = !isAuthorized ? (photoPath: "/images/user-profile.jpg", name: "Not authorized") : storage.GetCurrentUserInfo(userName);
+
+    var isAdmin = false;
+    if (isAuthorized)
+    {
+        isAdmin = storage.IsUserAdmin(userName);
+    }
 }
 
 <aside>
@@ -25,38 +34,41 @@
             </p>
             <h5 class="centered" id="profileName">@info.name</h5>
 
-            <li class="sub-menu">
-                <a id="friendsSub" asp-action="Friends" asp-controller="Profile">
-                    <i class="fa"></i>
-                    <span id="friendsText">My Friends</span>
-                </a>
-            </li>
+            @if (isAuthorized)
+            {
+                <li class="sub-menu">
+                    <a id="friendsSub" asp-action="Friends" asp-controller="Profile">
+                        <i class="fa"></i>
+                        <span id="friendsText">@Localizer["My Friends"]</span>
+                    </a>
+                </li>
 
-            <li class="sub-menu">
-                <a id="reviewsSub" asp-action="Reviews" asp-controller="Profile">
-                    <i class="fa"></i>
-                    <span id="reviewsText">My Reviews</span>
-                </a>
-            </li>
+                <li class="sub-menu">
+                    <a id="reviewsSub" asp-action="Reviews" asp-controller="Profile">
+                        <i class="fa"></i>
+                        <span id="reviewsText">@Localizer["My Reviews"]</span>
+                    </a>
+                </li>
+            }
 
-            <li class="sub-menu">
-                <a id="favFilmsSub">
-                    <i class="fa"></i>
-                    <span>Favourite Films</span>
-                </a>
-            </li>
+            @*<li class="sub-menu">
+                    <a id="favFilmsSub">
+                        <i class="fa"></i>
+                        <span>Favourite Films</span>
+                    </a>
+                </li>
 
-            <li class="sub-menu">
-                <a id="favActorsSub">
-                    <i class="fa"></i>
-                    <span>Favourite Actors</span>
-                </a>
-            </li>
+                <li class="sub-menu">
+                    <a id="favActorsSub">
+                        <i class="fa"></i>
+                        <span>Favourite Actors</span>
+                    </a>
+                </li>*@
 
             <li class="sub-menu">
                 <a id="searchSub" asp-controller="Search" asp-action="Index">
                     <i class="fa"></i>
-                    <span id="searchText">Search</span>
+                    <span id="searchText">@Localizer["Search"]</span>
                 </a>
             </li>
 
@@ -65,7 +77,7 @@
                 <li class="sub-menu">
                     <a id="adminSub" asp-controller="Admin" asp-action="Index">
                         <i class="fa"></i>
-                        <span id="adminText">Administration</span>
+                        <span id="adminText">@Localizer["Administration"]</span>
                     </a>
                 </li>
 
